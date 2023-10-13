@@ -11,13 +11,13 @@ typedef uint8_t PinName;
 class PwmOut{
 private:
     PinName pin;
-    int freq = 50;
+    unsigned int freq = 2;
     uint8_t ch;
     const int resolution_bits = 10;
     float duty;
 
 public:
-    PwmOut(PinName _pin, uint8_t _ch);
+    PwmOut(PinName _pin, uint8_t _ch); // Arduino ver. In MBED, PwmOut(PinName _pin);
     
     void operator=(float _duty);
 

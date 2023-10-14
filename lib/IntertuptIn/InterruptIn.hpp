@@ -6,6 +6,8 @@
 class InterruptIn{
 private:
     PinName pin;
+    risefunc = []{return;}
+    fallfunc = []{return;}
 
 public:
     InterruptIn(PinName _pin);

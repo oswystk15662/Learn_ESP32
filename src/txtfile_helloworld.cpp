@@ -1,4 +1,4 @@
-#include <Arduino.h>
+/*#include <Arduino.h>
 #include <FS.h>
 #include <SPIFFS.h>
 
@@ -27,4 +27,4 @@ void u_main(){
 }
 
 void setup() { u_main(); }
-void loop() {}
+void loop() {}*/

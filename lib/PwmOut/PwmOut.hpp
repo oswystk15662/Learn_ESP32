@@ -5,7 +5,9 @@ this class provide 10 bits background pwm function.
 #pragma once
 
 #include <Arduino.h>
-#include "uniques.hpp"
+
+using namespace std;
+typedef uint8_t PinName;
 
 class PwmOut{
 private:

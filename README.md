@@ -1,0 +1,1 @@
+PlatformIOのライブラリ検索でArduinoEigenと調べ、Hideaki Tai著のライブラリをインストールしてください

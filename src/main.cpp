@@ -25,7 +25,7 @@ void subProcess(void * pvParameters) {
             if(digitalRead(pin_sw) == HIGH){
                 f_cp = SPIFFS.open(path, FILE_WRITE);//file coner points
                 f_cp.printf("%f,%f\n", global_pos.x(), global_pos.y());
-                //Serial.println(f_cp.size()); // なんかずっと表示される。。謎
+                //Serial.println(f_cp.size());
                 f_cp.close();
             }
 

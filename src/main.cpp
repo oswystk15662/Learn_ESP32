@@ -1,50 +1,97 @@
+// 参考　https://programresource.net/2020/02/25/2994.html
+
 #include <Arduino.h>
-#include <ArduinoEigenDense.h>
+#include <ArduinoEigen.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 using namespace Eigen;
+using namespace fs;
 
-void setup() {
-  Serial.begin(9600);
-  Serial.println("start");
-  delay(2000);
+SemaphoreHandle_t xMutex = NULL; 
+volatile int intdata = 0;
+ 
+Vector2d global_pos;
+constexpr uint8_t pin_sw = 23;
 
-  MatrixXd m(3, 3);
-  m <<  1, 2, 3,
-        4, 5, 6,
-        7, 8, 9;
+constexpr bool FORMAT_SPIFFS_IF_FAILED = true;
+String path = "/coner_points.txt";
 
-  //m = (m + Matrix3d::Constant(1.2)) * 50;
+void subProcess(void * pvParameters) {
+    File f_cp;
 
-  Serial.println("m =");
-  Serial.print(m(0, 0));
-  Serial.print(" ");
-  Serial.print(m(0, 1));
-  Serial.print(" ");
-  Serial.print(m(0, 2));
-  Serial.println();
-  Serial.print(m(1, 0));
-  Serial.print(" ");
-  Serial.print(m(1, 1));
-  Serial.print(" ");
-  Serial.print(m(1, 2));
-  Serial.println();
-  Serial.print(m(2, 0));
-  Serial.print(" ");
-  Serial.print(m(2, 1));
-  Serial.print(" ");
-  Serial.print(m(2, 2));
-  Serial.println();
+    while (1) {
+        if (xSemaphoreTake( xMutex, ( portTickType ) 100 ) == pdTRUE) {
+            if(digitalRead(pin_sw) == HIGH){
+                f_cp = SPIFFS.open(path, FILE_WRITE);//file coner points
+                f_cp.printf("%f,%f\n", global_pos.x(), global_pos.y());
+                //Serial.println(f_cp.size()); // なんかずっと表示される。。謎
+                f_cp.close();
+            }
 
-  Vector3d v(1, 2, 3);
-  Vector3d vo = m * v;
+            xSemaphoreGive(xMutex);
+        }
+        delay(1);
+    }
+}
+ 
+void u_main(){
+    pinMode(pin_sw, INPUT_PULLDOWN);
 
-  Serial.println("m * v =");
-  Serial.print(vo(0));
-  Serial.println();
-  Serial.print(vo(1));
-  Serial.println();
-  Serial.print(vo(2));
-  Serial.println();
+    Serial.begin(9600);
+ 
+    xMutex = xSemaphoreCreateMutex();
+    xSemaphoreGive(xMutex);
+    xTaskCreatePinnedToCore(subProcess, "subProcess", 4096, NULL, 1, NULL, 0); //Core 0でタスク開始
+
+    SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED);
+    File f_cp;
+
+    while(1){
+        if (xSemaphoreTake( xMutex, ( portTickType ) 100 ) == pdTRUE) {
+            if(Serial.available() == 1){// when there is 1 byte data in buffer.
+                switch (Serial.read())
+                {
+                    case 'w' : global_pos += Vector2d(0.0f, 1.0f); break;
+                    case 'a' : global_pos += Vector2d(-1.0f, 0.0f); break;
+                    case 's' : global_pos += Vector2d(0.0f, -1.0f); break;
+                    case 'd' : global_pos += Vector2d(1.0f, 0.0f); break;
+                    
+                    case 'f' :
+                        f_cp = SPIFFS.open(path, FILE_READ);//file coner points
+                        Serial.println(f_cp.readStringUntil('\n'));
+                        f_cp.close();
+                    break;
+
+                    default: break;
+                }
+            }
+
+            xSemaphoreGive(xMutex);
+        }
+        delay(1);
+    }
 }
 
+void setup() {
+    u_main();
+}
+ 
 void loop() {}
+
+/*
+
+
+float global_rot; // -pi ~ pi
+
+void go_forward(){
+
+}
+
+void get_pos{// betsu sureddo
+
+}
+
+
+
+*/

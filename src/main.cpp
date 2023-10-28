@@ -10,6 +10,8 @@ using namespace fs;
 
 SemaphoreHandle_t xMutex = NULL; 
 volatile int intdata = 0;
+
+unsigned int cnt = 0;
  
 Vector2d global_pos;
 constexpr uint8_t pin_sw = 23;
@@ -24,9 +26,10 @@ void subProcess(void * pvParameters) {
         if (xSemaphoreTake( xMutex, ( portTickType ) 100 ) == pdTRUE) {
             if(digitalRead(pin_sw) == HIGH){
                 f_cp = SPIFFS.open(path, FILE_WRITE);//file coner points
-                f_cp.printf("%f,%f\n", global_pos.x(), global_pos.y());
+                f_cp.printf("%f,%f, cnt = %d\n", global_pos.x(), global_pos.y(), cnt);
                 //Serial.println(f_cp.size());
                 f_cp.close();
+                cnt++;
             }
 
             xSemaphoreGive(xMutex);

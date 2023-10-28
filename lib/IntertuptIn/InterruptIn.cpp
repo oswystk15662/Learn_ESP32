@@ -4,8 +4,8 @@ InterruptIn::InterruptIn(PinName _pin):pin(_pin)
 {
     pinMode(pin, INPUT_PULLUP);
 
-    attachInterrupt(pin, risefunc, RISING);
-    attachInterrupt(pin, fallfunc, FALLING);
+    attachInterrupt(pin, &[this](){_risefunc();}, RISING);
+    attachInterrupt(pin, &[this](){_fallfunc();}, FALLING);
 }
 
 InterruptIn::InterruptIn(PinName _pin, mPinMode _mpm):pin(_pin)

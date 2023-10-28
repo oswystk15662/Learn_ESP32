@@ -19,7 +19,7 @@ void u_main(){
 
   File fr = SPIFFS.open(path, FILE_READ);
   while(fr.available()){
-    String str = fr.readStringUntil('\n');
+    String str = fr.readString();
     Serial.println(str);
     delay(100);
   }
